@@ -6,41 +6,25 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.plantsense.ai.R
 
 @Composable
 fun BottomNavigationBar(
-    navController: NavController,
+    selectedRoute: AppRoute?,
+    onNavigate: (AppRoute) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
-
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
         modifier = modifier
     ) {
         // Home Tab
-        val isHomeSelected = currentDestination?.hierarchy?.any { it.hasRoute<HomeKey>() } == true
+        val isHomeSelected = selectedRoute == AppRoute.Home
         NavigationBarItem(
             selected = isHomeSelected,
-            onClick = {
-                navController.navigate(HomeKey) {
-                    popUpTo(navController.graph.findStartDestination().id) {
-                        saveState = true
-                    }
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            },
+            onClick = { onNavigate(AppRoute.Home) },
             icon = {
                 Icon(
                     imageVector = Icons.Default.Home,
@@ -58,18 +42,10 @@ fun BottomNavigationBar(
         )
 
         // History Tab
-        val isHistorySelected = currentDestination?.hierarchy?.any { it.hasRoute<HistoryKey>() } == true
+        val isHistorySelected = selectedRoute == AppRoute.History
         NavigationBarItem(
             selected = isHistorySelected,
-            onClick = {
-                navController.navigate(HistoryKey) {
-                    popUpTo(navController.graph.findStartDestination().id) {
-                        saveState = true
-                    }
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            },
+            onClick = { onNavigate(AppRoute.History) },
             icon = {
                 Icon(
                     imageVector = Icons.Default.History,
@@ -87,18 +63,10 @@ fun BottomNavigationBar(
         )
 
         // Profile/Settings Tab
-        val isProfileSelected = currentDestination?.hierarchy?.any { it.hasRoute<ProfileKey>() } == true
+        val isProfileSelected = selectedRoute == AppRoute.Profile
         NavigationBarItem(
             selected = isProfileSelected,
-            onClick = {
-                navController.navigate(ProfileKey) {
-                    popUpTo(navController.graph.findStartDestination().id) {
-                        saveState = true
-                    }
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            },
+            onClick = { onNavigate(AppRoute.Profile) },
             icon = {
                 Icon(
                     imageVector = Icons.Default.Settings,

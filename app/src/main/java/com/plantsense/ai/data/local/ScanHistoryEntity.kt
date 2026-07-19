@@ -9,6 +9,7 @@ import com.plantsense.ai.domain.model.ScanType
 data class ScanHistoryEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val type: String, // "IDENTIFICATION" or "DISEASE"
+    // Always an absolute local file path; never a bare content:// URI or remote URL
     val imageUrl: String,
     val timestamp: Long,
     val plantName: String? = null,

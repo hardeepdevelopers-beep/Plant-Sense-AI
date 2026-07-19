@@ -22,6 +22,7 @@ object NetworkModule {
     fun provideLoggingInterceptor(): HttpLoggingInterceptor {
         return HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
+            redactHeader("x-goog-api-key")
         }
     }
 
@@ -40,11 +41,11 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    fun provideRetrofit(okHttpClient: OkHttpClient, gson: com.google.gson.Gson): Retrofit {
         return Retrofit.Builder()
             .baseUrl("https://generativelanguage.googleapis.com/")
             .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
     }
 
@@ -52,5 +53,11 @@ object NetworkModule {
     @Singleton
     fun provideGeminiApiService(retrofit: Retrofit): GeminiApiService {
         return retrofit.create(GeminiApiService::class.java)
+    }
+
+    @Provides
+    @com.plantsense.ai.core.di.GeminiModel
+    fun provideGeminiModel(): String {
+        return BuildConfig.GEMINI_MODEL
     }
 }

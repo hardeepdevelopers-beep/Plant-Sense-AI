@@ -109,4 +109,29 @@
     <string name="recent_scans_label">Recent scans</string>
     <string name="select_analysis_type">Select Analysis Type</string>
     <string name="choose_how_to_analyze">Choose how you want to analyze this image.</string>
+
+    <!-- Greetings -->
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
+
+    <!-- Relative Time Plurals -->
+    <string name="just_now">Just now</string>
+    <plurals name="days_ago">
+        <item quantity="one">1 day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+    <plurals name="hours_ago">
+        <item quantity="one">1 hour ago</item>
+        <item quantity="other">%1$d hours ago</item>
+    </plurals>
+    <plurals name="minutes_ago">
+        <item quantity="one">1 minute ago</item>
+        <item quantity="other">%1$d minutes ago</item>
+    </plurals>
+
+    <!-- Error Handling localized strings -->
+    <string name="network_error_msg">Network connection issue. Please check your internet connection and try again.</string>
+    <string name="unknown_error_msg">An unexpected error occurred. Please try again.</string>
+    <string name="api_error_msg">AI Service encountered an error. Please try again later.</string>
 </resources>

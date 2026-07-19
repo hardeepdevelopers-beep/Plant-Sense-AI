@@ -25,4 +25,10 @@ abstract class RepositoryModule {
     abstract fun bindSettingsRepository(
         settingsRepositoryImpl: SettingsRepositoryImpl
     ): SettingsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindImageStorage(
+        imageStorageImpl: com.plantsense.ai.data.local.ImageStorageImpl
+    ): com.plantsense.ai.domain.repository.ImageStorage
 }

@@ -19,11 +19,13 @@ android {
 
         val gApiKey = project.findProperty("G_API_KEY") as? String ?: ""
         buildConfigField("String", "G_API_KEY", "\"$gApiKey\"")
+        buildConfigField("String", "GEMINI_MODEL", "\"gemini-3.5-flash\"")
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
@@ -118,4 +120,14 @@ dependencies {
 
   // WorkManager
   implementation(libs.work.runtime.ktx)
+
+  // Centralized Logging
+  implementation(libs.timber)
+
+  // ExifInterface for image rotation
+  implementation(libs.androidx.exifinterface)
+
+  // Testing
+  testImplementation(libs.mockk)
+  testImplementation(libs.turbine)
 }

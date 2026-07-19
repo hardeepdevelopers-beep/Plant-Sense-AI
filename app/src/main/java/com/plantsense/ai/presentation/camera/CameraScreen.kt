@@ -39,8 +39,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.plantsense.ai.R
-import com.plantsense.ai.data.datastore.PreferencesManager
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
@@ -58,17 +56,10 @@ fun CameraScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
     
-    // Check if API key exists
-    val preferencesManager = remember { PreferencesManager(context) }
-    var hasApiKey by remember { mutableStateOf(true) }
-    
-    LaunchedEffect(Unit) {
-        preferencesManager.apiKey.collect { key ->
-            hasApiKey = key.trim().isNotEmpty()
-        }
-    }
+    // Check if API key exists via Hilt ViewModel
+    val viewModel: CameraViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+    val hasApiKey by viewModel.hasApiKey.collectAsState()
 
     // Permission state
     var hasCameraPermission by remember {
@@ -99,26 +90,6 @@ fun CameraScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                 },
-                /*
-                navigationIcon = {
-                    IconButton(onClick = onNavigateToHistory) {
-                        Icon(
-                            imageVector = Icons.Default.History,
-                            contentDescription = stringResource(R.string.scan_history_cd),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onNavigateToProfile) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = stringResource(R.string.settings_cd),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                },
-                */
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent
                 )
@@ -226,13 +197,13 @@ fun CameraViewfinder(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val coroutineScope = rememberCoroutineScope()
 
     val previewView = remember { PreviewView(context) }
     val imageCapture = remember { ImageCapture.Builder().build() }
     val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
 
     var isCapturing by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -285,6 +256,26 @@ fun CameraViewfinder(
                 )
         )
 
+        // Error message Snackbar overlay at the top
+        errorMessage?.let { msg ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                Snackbar(
+                    action = {
+                        TextButton(onClick = { errorMessage = null }) {
+                            Text("Dismiss", color = MaterialTheme.colorScheme.inversePrimary)
+                        }
+                    }
+                ) {
+                    Text(msg)
+                }
+            }
+        }
+
         // Shutter Buttons & Info Overlay
         Column(
             modifier = Modifier
@@ -325,10 +316,20 @@ fun CameraViewfinder(
                         onClick = {
                             if (hasApiKey) {
                                 isCapturing = true
-                                capturePhoto(context, imageCapture, cameraExecutor) { file ->
-                                    isCapturing = false
-                                    onPhotoCaptured(file, "IDENTIFICATION")
-                                }
+                                errorMessage = null
+                                capturePhoto(
+                                    context = context,
+                                    imageCapture = imageCapture,
+                                    executor = cameraExecutor,
+                                    onPhotoCaptured = { file ->
+                                        isCapturing = false
+                                        onPhotoCaptured(file, "IDENTIFICATION")
+                                    },
+                                    onCaptureError = {
+                                        isCapturing = false
+                                        errorMessage = "Failed to capture photo, please try again."
+                                    }
+                                )
                             }
                         },
                         colors = ButtonDefaults.buttonColors(
@@ -353,10 +354,20 @@ fun CameraViewfinder(
                         onClick = {
                             if (hasApiKey) {
                                 isCapturing = true
-                                capturePhoto(context, imageCapture, cameraExecutor) { file ->
-                                    isCapturing = false
-                                    onPhotoCaptured(file, "DISEASE")
-                                }
+                                errorMessage = null
+                                capturePhoto(
+                                    context = context,
+                                    imageCapture = imageCapture,
+                                    executor = cameraExecutor,
+                                    onPhotoCaptured = { file ->
+                                        isCapturing = false
+                                        onPhotoCaptured(file, "DISEASE")
+                                    },
+                                    onCaptureError = {
+                                        isCapturing = false
+                                        errorMessage = "Failed to capture photo, please try again."
+                                    }
+                                )
                             }
                         },
                         colors = ButtonDefaults.buttonColors(
@@ -385,10 +396,12 @@ private fun capturePhoto(
     context: Context,
     imageCapture: ImageCapture,
     executor: ExecutorService,
-    onPhotoCaptured: (File) -> Unit
+    onPhotoCaptured: (File) -> Unit,
+    onCaptureError: (ImageCaptureException) -> Unit
 ) {
+    val scansDir = File(context.filesDir, "scans").apply { mkdirs() }
     val photoFile = File(
-        context.cacheDir,
+        scansDir,
         SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US).format(System.currentTimeMillis()) + ".jpg"
     )
 
@@ -406,9 +419,8 @@ private fun capturePhoto(
             }
 
             override fun onError(exception: ImageCaptureException) {
-                exception.printStackTrace()
                 ContextCompat.getMainExecutor(context).execute {
-                    onPhotoCaptured(photoFile)
+                    onCaptureError(exception)
                 }
             }
         }

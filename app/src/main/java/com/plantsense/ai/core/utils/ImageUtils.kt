@@ -2,7 +2,9 @@ package com.plantsense.ai.core.utils
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.util.Base64
+import androidx.exifinterface.media.ExifInterface
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -28,8 +30,45 @@ object ImageUtils {
         }
         val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath, decodeOptions) ?: return ""
         
+        // Read EXIF orientation and rotate accordingly
+        val finalBitmap = try {
+            val exifInterface = ExifInterface(imageFile.absolutePath)
+            val orientation = exifInterface.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
+            )
+            val matrix = Matrix()
+            var needsRotation = false
+            when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> {
+                    matrix.postRotate(90f)
+                    needsRotation = true
+                }
+                ExifInterface.ORIENTATION_ROTATE_180 -> {
+                    matrix.postRotate(180f)
+                    needsRotation = true
+                }
+                ExifInterface.ORIENTATION_ROTATE_270 -> {
+                    matrix.postRotate(270f)
+                    needsRotation = true
+                }
+            }
+            if (needsRotation) {
+                val rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+                bitmap.recycle()
+                rotated
+            } else {
+                bitmap
+            }
+        } catch (e: Exception) {
+            bitmap
+        }
+        
         val outputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+        finalBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+        if (finalBitmap != bitmap) {
+            finalBitmap.recycle()
+        }
         val bytes = outputStream.toByteArray()
         return Base64.encodeToString(bytes, Base64.NO_WRAP)
     }

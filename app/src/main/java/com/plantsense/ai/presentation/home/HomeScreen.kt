@@ -29,31 +29,43 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.plantsense.ai.R
 import com.plantsense.ai.domain.model.ScanHistoryItem
 import com.plantsense.ai.domain.model.ScanType
-import com.plantsense.ai.presentation.navigation.BottomNavigationBar
-import com.plantsense.ai.presentation.navigation.HomeKey
 import java.util.Calendar
+import java.io.File
+import androidx.compose.ui.res.pluralStringResource
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun HomeScreen(
-    navController: NavController,
     onNavigateToCamera: () -> Unit,
     onNavigateToHistory: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToIdentify: (String, Int) -> Unit,
     onNavigateToDisease: (String, Int) -> Unit,
+    bottomBar: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isCopying by viewModel.isCopying.collectAsStateWithLifecycle()
+    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     
+    val snackbarHostState = remember { SnackbarHostState() }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var showAnalysisDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let { msg ->
+            showAnalysisDialog = false
+            snackbarHostState.showSnackbar(msg)
+            viewModel.clearError()
+        }
+    }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
@@ -66,11 +78,8 @@ fun HomeScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = {
-            BottomNavigationBar(
-                navController = navController
-            )
-        },
+        bottomBar = bottomBar,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         modifier = modifier.fillMaxSize()
     ) { paddingValues ->
         Column(
@@ -405,7 +414,7 @@ fun RecentScanRowItem(
                 contentAlignment = Alignment.Center
             ) {
                 AsyncImage(
-                    model = item.imageUrl,
+                    model = File(item.imageUrl),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -439,15 +448,17 @@ fun RecentScanRowItem(
     }
 }
 
+@Composable
 private fun getGreeting(): String {
     val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
     return when (hour) {
-        in 0..11 -> "Good morning"
-        in 12..16 -> "Good afternoon"
-        else -> "Good evening"
+        in 0..11 -> stringResource(R.string.greeting_morning)
+        in 12..16 -> stringResource(R.string.greeting_afternoon)
+        else -> stringResource(R.string.greeting_evening)
     }
 }
 
+@Composable
 private fun getRelativeTimeString(timestamp: Long): String {
     val diff = System.currentTimeMillis() - timestamp
     val seconds = diff / 1000
@@ -456,9 +467,13 @@ private fun getRelativeTimeString(timestamp: Long): String {
     val days = hours / 24
 
     return when {
-        days > 0 -> if (days == 1L) "1 day ago" else "$days days ago"
-        hours > 0 -> if (hours == 1L) "1 hour ago" else "$hours hours ago"
-        minutes > 0 -> if (minutes == 1L) "1 minute ago" else "$minutes minutes ago"
-        else -> "Just now"
+        days > 30 -> {
+            val sdf = SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
+            sdf.format(Date(timestamp))
+        }
+        days > 0 -> pluralStringResource(R.plurals.days_ago, days.toInt(), days.toInt())
+        hours > 0 -> pluralStringResource(R.plurals.hours_ago, hours.toInt(), hours.toInt())
+        minutes > 0 -> pluralStringResource(R.plurals.minutes_ago, minutes.toInt(), minutes.toInt())
+        else -> stringResource(R.string.just_now)
     }
 }

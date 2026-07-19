@@ -31,7 +31,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.plantsense.ai.R
 import com.plantsense.ai.domain.model.ScanHistoryItem
@@ -39,20 +38,16 @@ import com.plantsense.ai.domain.model.ScanType
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
-import com.plantsense.ai.presentation.navigation.BottomNavigationBar
-import com.plantsense.ai.presentation.navigation.HomeKey
-import com.plantsense.ai.presentation.navigation.HistoryKey
-import com.plantsense.ai.presentation.navigation.ProfileKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
-    navController: NavController,
     onNavigateToHome: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToIdentify: (String, Int) -> Unit,
     onNavigateToDisease: (String, Int) -> Unit,
     onBack: () -> Unit,
+    bottomBar: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
@@ -74,11 +69,7 @@ fun HistoryScreen(
                 )
             )
         },
-        bottomBar = {
-            BottomNavigationBar(
-                navController = navController
-            )
-        },
+        bottomBar = bottomBar,
         containerColor = MaterialTheme.colorScheme.background,
         modifier = modifier.fillMaxSize()
     ) { paddingValues ->
@@ -212,7 +203,7 @@ fun HistoryCard(
                     .background(Color.LightGray)
             ) {
                 AsyncImage(
-                    model = item.imageUrl,
+                    model = File(item.imageUrl),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()

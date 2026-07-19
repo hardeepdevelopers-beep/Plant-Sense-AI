@@ -120,7 +120,7 @@ fun DiseaseScreen(
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            state.message,
+                            text = if (state.messageResId != null) stringResource(state.messageResId) else state.message,
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)

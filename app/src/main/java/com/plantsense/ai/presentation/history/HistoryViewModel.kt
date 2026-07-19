@@ -2,10 +2,12 @@ package com.plantsense.ai.presentation.history
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.plantsense.ai.core.di.IoDispatcher
 import com.plantsense.ai.domain.model.ScanHistoryItem
 import com.plantsense.ai.domain.usecase.DeleteScanUseCase
 import com.plantsense.ai.domain.usecase.GetScanHistoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
     getScanHistoryUseCase: GetScanHistoryUseCase,
-    private val deleteScanUseCase: DeleteScanUseCase
+    private val deleteScanUseCase: DeleteScanUseCase,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -42,7 +45,7 @@ class HistoryViewModel @Inject constructor(
     }
 
     fun deleteItem(id: Int) {
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             deleteScanUseCase(id)
         }
     }

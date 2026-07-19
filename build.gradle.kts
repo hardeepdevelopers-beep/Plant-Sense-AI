@@ -4,5 +4,6 @@ plugins {
   alias(libs.plugins.compose.compiler) apply false
   alias(libs.plugins.kotlin.serialization) apply false
   alias(libs.plugins.hilt) apply false
-  alias(libs.plugins.legacy.kapt) apply false
+  kotlin("android") version "2.1.20" apply false
+  kotlin("kapt") version "2.1.20" apply false
 }

@@ -19,4 +19,7 @@ interface ScanHistoryDao {
 
     @Query("DELETE FROM scan_history")
     suspend fun clearHistory()
+
+    @Query("SELECT * FROM scan_history WHERE id = :id")
+    suspend fun getScanHistoryItem(id: Int): ScanHistoryEntity?
 }

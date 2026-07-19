@@ -195,6 +195,10 @@ class PlantRepositoryImpl @Inject constructor(
     override suspend fun clearHistory() {
         scanHistoryDao.clearHistory()
     }
+
+    override suspend fun getScanHistoryItem(id: Int): ScanHistoryItem? {
+        return scanHistoryDao.getScanHistoryItem(id)?.toDomain()
+    }
 }
 
 // Intermediary parsing models

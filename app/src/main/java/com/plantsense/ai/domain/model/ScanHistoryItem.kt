@@ -2,7 +2,7 @@ package com.plantsense.ai.domain.model
 
 data class ScanHistoryItem(
     val id: Int,
-    val type: String, // "IDENTIFICATION" or "DISEASE"
+    val type: ScanType,
     val imageUrl: String,
     val timestamp: Long,
     val plantName: String?,

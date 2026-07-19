@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.plantsense.ai.domain.model.PlantIdentificationResult
 import com.plantsense.ai.domain.model.ScanHistoryItem
+import com.plantsense.ai.domain.model.ScanType
 import com.plantsense.ai.domain.usecase.GetApiKeyUseCase
+import com.plantsense.ai.domain.usecase.GetScanHistoryItemUseCase
 import com.plantsense.ai.domain.usecase.IdentifyPlantUseCase
 import com.plantsense.ai.domain.usecase.SaveScanUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,13 +27,40 @@ sealed interface IdentificationUiState {
 class IdentificationViewModel @Inject constructor(
     private val identifyPlantUseCase: IdentifyPlantUseCase,
     private val getApiKeyUseCase: GetApiKeyUseCase,
-    private val saveScanUseCase: SaveScanUseCase
+    private val saveScanUseCase: SaveScanUseCase,
+    private val getScanHistoryItemUseCase: GetScanHistoryItemUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<IdentificationUiState>(IdentificationUiState.Loading)
     val uiState: StateFlow<IdentificationUiState> = _uiState
 
     private var hasSaved = false
+
+    fun loadResult(historyId: Int, imagePath: String) {
+        if (historyId != -1) {
+            viewModelScope.launch {
+                _uiState.value = IdentificationUiState.Loading
+                val item = getScanHistoryItemUseCase(historyId)
+                if (item != null) {
+                    _uiState.value = IdentificationUiState.Success(
+                        PlantIdentificationResult(
+                            plantName = item.plantName ?: "Unknown Plant",
+                            botanicalName = item.botanicalName ?: "Unknown",
+                            confidence = item.confidence ?: 0.0,
+                            description = item.description ?: "No description available",
+                            careLight = item.careLight ?: "Unknown sunlight requirements",
+                            careWater = item.careWater ?: "Unknown water requirements",
+                            careTemp = item.careTemp ?: "Unknown temperature requirements"
+                        )
+                    )
+                } else {
+                    _uiState.value = IdentificationUiState.Error("This scan is no longer available")
+                }
+            }
+        } else {
+            identify(imagePath)
+        }
+    }
 
     fun identify(imagePath: String) {
         viewModelScope.launch {
@@ -58,7 +87,7 @@ class IdentificationViewModel @Inject constructor(
                             saveScanUseCase(
                                 ScanHistoryItem(
                                     id = 0,
-                                    type = "IDENTIFICATION",
+                                    type = ScanType.IDENTIFICATION,
                                     imageUrl = imagePath,
                                     timestamp = System.currentTimeMillis(),
                                     plantName = result.plantName,

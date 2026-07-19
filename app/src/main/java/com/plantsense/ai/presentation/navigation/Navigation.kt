@@ -1,10 +1,10 @@
 package com.plantsense.ai.presentation.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.navigation3.ui.NavDisplay
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.plantsense.ai.presentation.camera.CameraScreen
 import com.plantsense.ai.presentation.disease.DiseaseScreen
 import com.plantsense.ai.presentation.identification.IdentificationScreen
@@ -14,64 +14,75 @@ import com.plantsense.ai.presentation.home.HomeScreen
 
 @Composable
 fun MainNavigation() {
-    val backStack = rememberNavBackStack(HomeKey)
+    val navController = rememberNavController()
 
-    fun navigateTo(targetKey: NavKey) {
-        if (backStack.lastOrNull() == targetKey) return
-        backStack.clear()
-        backStack.add(HomeKey)
-        if (targetKey != HomeKey) {
-            backStack.add(targetKey)
+    NavHost(
+        navController = navController,
+        startDestination = HomeKey
+    ) {
+        composable<HomeKey> {
+            HomeScreen(
+                navController = navController,
+                onNavigateToCamera = { navController.navigate(CameraKey) },
+                onNavigateToHistory = { navController.navigate(HistoryKey) },
+                onNavigateToProfile = { navController.navigate(ProfileKey) },
+                onNavigateToIdentify = { path, id -> 
+                    navController.navigate(IdentificationResultKey(imagePath = path, historyId = id)) 
+                },
+                onNavigateToDisease = { path, id -> 
+                    navController.navigate(DiseaseResultKey(imagePath = path, historyId = id)) 
+                }
+            )
+        }
+        composable<CameraKey> {
+            CameraScreen(
+                onNavigateToHistory = { navController.navigate(HistoryKey) },
+                onNavigateToProfile = { navController.navigate(ProfileKey) },
+                onNavigateToIdentify = { path -> 
+                    navController.navigate(IdentificationResultKey(imagePath = path, historyId = -1)) 
+                },
+                onNavigateToDisease = { path -> 
+                    navController.navigate(DiseaseResultKey(imagePath = path, historyId = -1)) 
+                }
+            )
+        }
+        composable<IdentificationResultKey> { backStackEntry ->
+            val key: IdentificationResultKey = backStackEntry.toRoute()
+            IdentificationScreen(
+                imagePath = key.imagePath,
+                historyId = key.historyId,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable<DiseaseResultKey> { backStackEntry ->
+            val key: DiseaseResultKey = backStackEntry.toRoute()
+            DiseaseScreen(
+                imagePath = key.imagePath,
+                historyId = key.historyId,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable<HistoryKey> {
+            HistoryScreen(
+                navController = navController,
+                onNavigateToHome = { navController.navigate(HomeKey) },
+                onNavigateToProfile = { navController.navigate(ProfileKey) },
+                onNavigateToIdentify = { path, id -> 
+                    navController.navigate(IdentificationResultKey(imagePath = path, historyId = id)) 
+                },
+                onNavigateToDisease = { path, id -> 
+                    navController.navigate(DiseaseResultKey(imagePath = path, historyId = id)) 
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable<ProfileKey> {
+            ProfileScreen(
+                navController = navController,
+                onNavigateToHome = { navController.navigate(HomeKey) },
+                onNavigateToHistory = { navController.navigate(HistoryKey) },
+                onBack = { navController.popBackStack() }
+            )
         }
     }
-
-    NavDisplay(
-        backStack = backStack,
-        onBack = { backStack.removeLastOrNull() },
-        entryProvider = entryProvider {
-            entry<HomeKey> {
-                HomeScreen(
-                    onNavigateToCamera = { backStack.add(CameraKey) },
-                    onNavigateToHistory = { navigateTo(HistoryKey) },
-                    onNavigateToProfile = { navigateTo(ProfileKey) },
-                    onNavigateToIdentify = { path -> backStack.add(IdentificationResultKey(path)) },
-                    onNavigateToDisease = { path -> backStack.add(DiseaseResultKey(path)) }
-                )
-            }
-            entry<CameraKey> {
-                CameraScreen(
-                    onNavigateToHistory = { navigateTo(HistoryKey) },
-                    onNavigateToProfile = { navigateTo(ProfileKey) },
-                    onNavigateToIdentify = { path -> backStack.add(IdentificationResultKey(path)) },
-                    onNavigateToDisease = { path -> backStack.add(DiseaseResultKey(path)) }
-                )
-            }
-            entry<IdentificationResultKey> { key ->
-                IdentificationScreen(
-                    imagePath = key.imagePath,
-                    onBack = { backStack.removeLastOrNull() }
-                )
-            }
-            entry<DiseaseResultKey> { key ->
-                DiseaseScreen(
-                    imagePath = key.imagePath,
-                    onBack = { backStack.removeLastOrNull() }
-                )
-            }
-            entry<HistoryKey> {
-                HistoryScreen(
-                    onNavigateToHome = { navigateTo(HomeKey) },
-                    onNavigateToProfile = { navigateTo(ProfileKey) },
-                    onBack = { backStack.removeLastOrNull() }
-                )
-            }
-            entry<ProfileKey> {
-                ProfileScreen(
-                    onNavigateToHome = { navigateTo(HomeKey) },
-                    onNavigateToHistory = { navigateTo(HistoryKey) },
-                    onBack = { backStack.removeLastOrNull() }
-                )
-            }
-        }
-    )
 }

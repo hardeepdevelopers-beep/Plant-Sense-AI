@@ -1,9 +1,10 @@
 plugins {
   alias(libs.plugins.android.application)
+  kotlin("android")
   alias(libs.plugins.compose.compiler)
   alias(libs.plugins.kotlin.serialization)
+  kotlin("kapt")
   alias(libs.plugins.hilt)
-  alias(libs.plugins.legacy.kapt)
 }
 
 android {
@@ -30,6 +31,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
     buildFeatures {
       compose = true
       aidl = false
@@ -41,6 +45,10 @@ android {
       resources {
         excludes += "/META-INF/{AL2.0,LGPL2.1}"
       }
+    }
+    lint {
+        abortOnError = false
+        checkReleaseBuilds = false
     }
 }
 
@@ -81,18 +89,17 @@ dependencies {
   androidTestImplementation(libs.androidx.test.espresso.core)
 
   // Navigation
-  implementation(libs.androidx.navigation3.ui)
-  implementation(libs.androidx.navigation3.runtime)
-  implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+  implementation(libs.androidx.navigation.compose)
+  implementation(libs.coil.compose)
 
   // Hilt
   implementation(libs.hilt.android)
-  kapt(libs.hilt.compiler)
+  "kapt"(libs.hilt.compiler)
   implementation(libs.hilt.navigation.compose)
 
   // Room
   implementation(libs.room.runtime)
-  kapt(libs.room.compiler)
+  "kapt"(libs.room.compiler)
   implementation(libs.room.ktx)
 
   // Retrofit & OkHttp

@@ -3,6 +3,7 @@
     
     <!-- General / Common -->
     <string name="back_cd">Back</string>
+    <string name="back">Back</string>
     <string name="warning_cd">Warning</string>
     <string name="back_to_camera">Back to Camera</string>
     <string name="overview">Overview</string>

@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.plantsense.ai.domain.model.DiseaseDetectionResult
 import com.plantsense.ai.domain.model.ScanHistoryItem
+import com.plantsense.ai.domain.model.ScanType
 import com.plantsense.ai.domain.usecase.DetectDiseaseUseCase
 import com.plantsense.ai.domain.usecase.GetApiKeyUseCase
+import com.plantsense.ai.domain.usecase.GetScanHistoryItemUseCase
 import com.plantsense.ai.domain.usecase.SaveScanUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,13 +27,40 @@ sealed interface DiseaseUiState {
 class DiseaseViewModel @Inject constructor(
     private val detectDiseaseUseCase: DetectDiseaseUseCase,
     private val getApiKeyUseCase: GetApiKeyUseCase,
-    private val saveScanUseCase: SaveScanUseCase
+    private val saveScanUseCase: SaveScanUseCase,
+    private val getScanHistoryItemUseCase: GetScanHistoryItemUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<DiseaseUiState>(DiseaseUiState.Loading)
     val uiState: StateFlow<DiseaseUiState> = _uiState
 
     private var hasSaved = false
+
+    fun loadResult(historyId: Int, imagePath: String) {
+        if (historyId != -1) {
+            viewModelScope.launch {
+                _uiState.value = DiseaseUiState.Loading
+                val item = getScanHistoryItemUseCase(historyId)
+                if (item != null) {
+                    _uiState.value = DiseaseUiState.Success(
+                        DiseaseDetectionResult(
+                            isHealthy = item.diseaseName.isNullOrEmpty() || item.diseaseName == "Healthy",
+                            diseaseName = item.diseaseName,
+                            cause = item.diseaseCause,
+                            severity = item.diseaseSeverity,
+                            symptoms = item.diseaseSymptoms,
+                            treatment = item.diseaseTreatment,
+                            prevention = item.diseasePrevention
+                        )
+                    )
+                } else {
+                    _uiState.value = DiseaseUiState.Error("This scan is no longer available")
+                }
+            }
+        } else {
+            diagnose(imagePath)
+        }
+    }
 
     fun diagnose(imagePath: String) {
         viewModelScope.launch {
@@ -57,7 +86,7 @@ class DiseaseViewModel @Inject constructor(
                             saveScanUseCase(
                                 ScanHistoryItem(
                                     id = 0,
-                                    type = "DISEASE",
+                                    type = ScanType.DISEASE,
                                     imageUrl = imagePath,
                                     timestamp = System.currentTimeMillis(),
                                     plantName = null,

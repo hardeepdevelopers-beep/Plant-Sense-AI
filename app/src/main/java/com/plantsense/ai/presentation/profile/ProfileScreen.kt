@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavController
 import com.plantsense.ai.R
 import com.plantsense.ai.presentation.navigation.BottomNavigationBar
 import com.plantsense.ai.presentation.navigation.HomeKey
@@ -32,6 +33,7 @@ import com.plantsense.ai.presentation.navigation.ProfileKey
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
+    navController: NavController,
     onNavigateToHome: () -> Unit,
     onNavigateToHistory: () -> Unit,
     onBack: () -> Unit,
@@ -57,14 +59,7 @@ fun ProfileScreen(
         },
         bottomBar = {
             BottomNavigationBar(
-                currentKey = ProfileKey,
-                onNavigate = { key ->
-                    when (key) {
-                        HomeKey -> onNavigateToHome()
-                        HistoryKey -> onNavigateToHistory()
-                        ProfileKey -> {}
-                    }
-                }
+                navController = navController
             )
         },
         containerColor = MaterialTheme.colorScheme.background,

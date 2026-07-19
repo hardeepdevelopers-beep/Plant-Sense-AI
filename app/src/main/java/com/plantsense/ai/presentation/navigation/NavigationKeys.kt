@@ -1,11 +1,10 @@
 package com.plantsense.ai.presentation.navigation
 
-import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
-@Serializable data object HomeKey : NavKey
-@Serializable data object CameraKey : NavKey
-@Serializable data class IdentificationResultKey(val imagePath: String) : NavKey
-@Serializable data class DiseaseResultKey(val imagePath: String) : NavKey
-@Serializable data object HistoryKey : NavKey
-@Serializable data object ProfileKey : NavKey
+@Serializable data object HomeKey
+@Serializable data object CameraKey
+@Serializable data class IdentificationResultKey(val imagePath: String, val historyId: Int = -1)
+@Serializable data class DiseaseResultKey(val imagePath: String, val historyId: Int = -1)
+@Serializable data object HistoryKey
+@Serializable data object ProfileKey

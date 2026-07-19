@@ -3,6 +3,7 @@ package com.plantsense.ai.data.local
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.plantsense.ai.domain.model.ScanHistoryItem
+import com.plantsense.ai.domain.model.ScanType
 
 @Entity(tableName = "scan_history")
 data class ScanHistoryEntity(
@@ -27,7 +28,7 @@ data class ScanHistoryEntity(
     fun toDomain(): ScanHistoryItem {
         return ScanHistoryItem(
             id = id,
-            type = type,
+            type = try { ScanType.valueOf(type) } catch (e: Exception) { ScanType.IDENTIFICATION },
             imageUrl = imageUrl,
             timestamp = timestamp,
             plantName = plantName,
@@ -50,7 +51,7 @@ data class ScanHistoryEntity(
         fun fromDomain(item: ScanHistoryItem): ScanHistoryEntity {
             return ScanHistoryEntity(
                 id = item.id,
-                type = item.type,
+                type = item.type.name,
                 imageUrl = item.imageUrl,
                 timestamp = item.timestamp,
                 plantName = item.plantName,

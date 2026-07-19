@@ -14,4 +14,5 @@ interface PlantRepository {
     suspend fun insertScanHistory(item: ScanHistoryItem)
     suspend fun deleteScanHistoryItem(id: Int)
     suspend fun clearHistory()
+    suspend fun getScanHistoryItem(id: Int): ScanHistoryItem?
 }

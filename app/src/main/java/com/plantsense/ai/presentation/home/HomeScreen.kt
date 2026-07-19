@@ -1,11 +1,9 @@
 package com.plantsense.ai.presentation.home
 
-import android.content.Context
-import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,9 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -32,32 +28,35 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.plantsense.ai.R
 import com.plantsense.ai.domain.model.ScanHistoryItem
+import com.plantsense.ai.domain.model.ScanType
 import com.plantsense.ai.presentation.navigation.BottomNavigationBar
 import com.plantsense.ai.presentation.navigation.HomeKey
-import androidx.navigation3.runtime.NavKey
-import java.io.File
 import java.util.Calendar
 
 @Composable
 fun HomeScreen(
+    navController: NavController,
     onNavigateToCamera: () -> Unit,
     onNavigateToHistory: () -> Unit,
     onNavigateToProfile: () -> Unit,
-    onNavigateToIdentify: (String) -> Unit,
-    onNavigateToDisease: (String) -> Unit,
+    onNavigateToIdentify: (String, Int) -> Unit,
+    onNavigateToDisease: (String, Int) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val recentScans by viewModel.recentScans.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isCopying by viewModel.isCopying.collectAsStateWithLifecycle()
     
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var showAnalysisDialog by remember { mutableStateOf(false) }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.PickVisualMedia()
     ) { uri: Uri? ->
         uri?.let {
             selectedImageUri = it
@@ -69,14 +68,7 @@ fun HomeScreen(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             BottomNavigationBar(
-                currentKey = HomeKey,
-                onNavigate = { key ->
-                    when (key) {
-                        HomeKey -> { /* Already on Home */ }
-                        com.plantsense.ai.presentation.navigation.HistoryKey -> onNavigateToHistory()
-                        com.plantsense.ai.presentation.navigation.ProfileKey -> onNavigateToProfile()
-                    }
-                }
+                navController = navController
             )
         },
         modifier = modifier.fillMaxSize()
@@ -110,7 +102,7 @@ fun HomeScreen(
             Card(
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF1B5E20) // Deep rich forest green background
+                    containerColor = MaterialTheme.colorScheme.primary
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -130,20 +122,20 @@ fun HomeScreen(
                             modifier = Modifier
                                 .size(64.dp)
                                 .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.15f)),
+                                .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.15f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.CameraAlt,
                                 contentDescription = null,
-                                tint = Color(0xFF81C784), // Premium mint green accent
+                                tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(32.dp)
                             )
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = stringResource(R.string.scan_a_plant),
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -192,7 +184,11 @@ fun HomeScreen(
 
                 // Upload
                 Button(
-                    onClick = { imagePickerLauncher.launch("image/*") },
+                    onClick = { 
+                        imagePickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surface,
@@ -236,37 +232,50 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             // List of Recent Scans
-            if (recentScans.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = stringResource(R.string.no_scans_found),
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                        fontSize = 14.sp
-                    )
+            when (val state = uiState) {
+                is HomeUiState.Loading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    }
                 }
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                ) {
-                    items(recentScans, key = { it.id }) { item ->
-                        RecentScanRowItem(
-                            item = item,
-                            onClick = {
-                                if (item.type == "IDENTIFICATION") {
-                                    onNavigateToIdentify(item.imageUrl)
-                                } else {
-                                    onNavigateToDisease(item.imageUrl)
-                                }
-                            }
+                is HomeUiState.Empty -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(R.string.no_scans_found),
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                            fontSize = 14.sp
                         )
+                    }
+                }
+                is HomeUiState.Success -> {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ) {
+                        items(state.scans, key = { it.id }) { item ->
+                            RecentScanRowItem(
+                                item = item,
+                                onClick = {
+                                    if (item.type == ScanType.IDENTIFICATION) {
+                                        onNavigateToIdentify(item.imageUrl, item.id)
+                                    } else {
+                                        onNavigateToDisease(item.imageUrl, item.id)
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -275,7 +284,7 @@ fun HomeScreen(
 
     // Analysis Type Dialog for Picked Images
     if (showAnalysisDialog) {
-        Dialog(onDismissRequest = { showAnalysisDialog = false }) {
+        Dialog(onDismissRequest = { if (!isCopying) showAnalysisDialog = false }) {
             Card(
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -303,47 +312,56 @@ fun HomeScreen(
                     )
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Identify option
-                    Button(
-                        onClick = {
-                            showAnalysisDialog = false
-                            selectedImageUri?.let { uri ->
-                                val file = copyUriToCache(context, uri)
-                                file?.let { onNavigateToIdentify(it.absolutePath) }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(stringResource(R.string.identify_plant), fontWeight = FontWeight.Bold)
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Diagnose Option
-                    Button(
-                        onClick = {
-                            showAnalysisDialog = false
-                            selectedImageUri?.let { uri ->
-                                val file = copyUriToCache(context, uri)
-                                file?.let { onNavigateToDisease(it.absolutePath) }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondary
+                    if (isCopying) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(vertical = 8.dp)
                         )
-                    ) {
-                        Text(stringResource(R.string.diagnose_disease), fontWeight = FontWeight.Bold)
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
+                    } else {
+                        // Identify option
+                        Button(
+                            onClick = {
+                                selectedImageUri?.let { uri ->
+                                    viewModel.processPickedImage(uri) { path ->
+                                        showAnalysisDialog = false
+                                        onNavigateToIdentify(path, -1)
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(stringResource(R.string.identify_plant), fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                    // Cancel
-                    TextButton(onClick = { showAnalysisDialog = false }) {
-                        Text(
-                            stringResource(R.string.cancel),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
+                        // Diagnose Option
+                        Button(
+                            onClick = {
+                                selectedImageUri?.let { uri ->
+                                    viewModel.processPickedImage(uri) { path ->
+                                        showAnalysisDialog = false
+                                        onNavigateToDisease(path, -1)
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary
+                            )
+                        ) {
+                            Text(stringResource(R.string.diagnose_disease), fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Cancel
+                        TextButton(onClick = { showAnalysisDialog = false }) {
+                            Text(
+                                stringResource(R.string.cancel),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                        }
                     }
                 }
             }
@@ -356,14 +374,6 @@ fun RecentScanRowItem(
     item: ScanHistoryItem,
     onClick: () -> Unit
 ) {
-    val bitmap = remember(item.imageUrl) {
-        try {
-            BitmapFactory.decodeFile(item.imageUrl)
-        } catch (e: Exception) {
-            null
-        }
-    }
-
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
@@ -380,24 +390,26 @@ fun RecentScanRowItem(
                 .padding(12.dp)
                 .fillMaxWidth()
         ) {
-            // Rounded Thumbnail with fallbacks
+            // Rounded Thumbnail with AsyncImage
             Box(
                 modifier = Modifier
                     .size(56.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(
-                        if (item.type == "IDENTIFICATION") Color(0xFF1B5E20) else Color(0xFFD32F2F)
+                        if (item.type == ScanType.IDENTIFICATION) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.errorContainer
+                        }
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                if (bitmap != null) {
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                AsyncImage(
+                    model = item.imageUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -407,7 +419,7 @@ fun RecentScanRowItem(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = if (item.type == "IDENTIFICATION") {
+                    text = if (item.type == ScanType.IDENTIFICATION) {
                         item.plantName ?: stringResource(R.string.unknown_plant)
                     } else {
                         item.diseaseName ?: stringResource(R.string.leaf_pathology)
@@ -448,21 +460,5 @@ private fun getRelativeTimeString(timestamp: Long): String {
         hours > 0 -> if (hours == 1L) "1 hour ago" else "$hours hours ago"
         minutes > 0 -> if (minutes == 1L) "1 minute ago" else "$minutes minutes ago"
         else -> "Just now"
-    }
-}
-
-private fun copyUriToCache(context: Context, uri: Uri): File? {
-    return try {
-        val inputStream = context.contentResolver.openInputStream(uri)
-        val file = File(context.cacheDir, "picked_image_${System.currentTimeMillis()}.jpg")
-        val outputStream = file.outputStream()
-        inputStream?.use { input ->
-            outputStream.use { output ->
-                input.copyTo(output)
-            }
-        }
-        file
-    } catch (e: Exception) {
-        null
     }
 }

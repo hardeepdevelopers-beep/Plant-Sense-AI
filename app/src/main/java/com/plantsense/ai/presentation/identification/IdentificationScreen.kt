@@ -9,7 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Thermostat
@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.plantsense.ai.R
 import com.plantsense.ai.domain.model.PlantIdentificationResult
 import java.io.File
@@ -38,14 +39,15 @@ import java.io.File
 @Composable
 fun IdentificationScreen(
     imagePath: String,
+    historyId: Int,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: IdentificationViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(imagePath) {
-        viewModel.identify(imagePath)
+    LaunchedEffect(imagePath, historyId) {
+        viewModel.loadResult(historyId, imagePath)
     }
 
     Scaffold(
@@ -54,7 +56,7 @@ fun IdentificationScreen(
                 title = { Text(stringResource(R.string.identification_results_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back_cd))
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back_cd))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -126,13 +128,24 @@ fun IdentificationScreen(
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
                         )
                         Spacer(modifier = Modifier.height(24.dp))
-                        Button(
-                            onClick = { viewModel.identify(imagePath) },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
-                            )
-                        ) {
-                            Text(stringResource(R.string.retry_diagnostic))
+                        if (historyId != -1) {
+                            Button(
+                                onClick = onBack,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary
+                                )
+                            ) {
+                                Text(stringResource(R.string.back))
+                            }
+                        } else {
+                            Button(
+                                onClick = { viewModel.identify(imagePath) },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary
+                                )
+                            ) {
+                                Text(stringResource(R.string.retry_diagnostic))
+                            }
                         }
                     }
                 }

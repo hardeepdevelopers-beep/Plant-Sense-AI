@@ -1,0 +1,111 @@
+<resources>
+    <string name="app_name">PlantSense AI</string>
+    
+    <!-- General / Common -->
+    <string name="back_cd">Back</string>
+    <string name="warning_cd">Warning</string>
+    <string name="back_to_camera">Back to Camera</string>
+    <string name="overview">Overview</string>
+    <string name="retry_diagnostic">Retry Diagnostic</string>
+    <string name="severity_label">Severity: %1$s</string>
+    <string name="sunlight">Sunlight</string>
+    <string name="watering">Watering</string>
+    <string name="temperature">Temperature</string>
+    <string name="observed_symptoms">Observed Symptoms</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Camera Screen -->
+    <string name="scan_history_cd">Scan History</string>
+    <string name="settings_cd">Settings</string>
+    <string name="api_key_warning">Please enter your Gemini API Key in Settings to scan plants.</string>
+    <string name="camera_permission_required">Camera Permission Required</string>
+    <string name="camera_permission_explanation">PlantSense AI requires access to your camera to identify plants and diagnose diseases.</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="capturing_details">Capturing details…</string>
+    <string name="position_plant_center">Position the plant in the center</string>
+    <string name="identify_plant">Identify Plant</string>
+    <string name="diagnose_disease">Diagnose Disease</string>
+
+    <!-- Identification Screen -->
+    <string name="identification_results_title">Identification Results</string>
+    <string name="analyzing_plant_features">Analyzing plant features…</string>
+    <string name="consulting_botanical_ai">Consulting botanical AI models</string>
+    <string name="scan_failed">Scan Failed</string>
+    <string name="match_confidence">Match Confidence: %1$d%%</string>
+    <string name="plant_care_guide">Plant Care Guide</string>
+    <string name="light_cd">Light</string>
+    <string name="sunlight_requirements">Sunlight Requirements</string>
+    <string name="water_cd">Water</string>
+    <string name="watering_schedule">Watering Schedule</string>
+    <string name="temperature_cd">Temperature</string>
+    <string name="ideal_temperature">Ideal Temperature</string>
+
+    <!-- Disease Screen -->
+    <string name="disease_diagnostics_title">Disease Diagnostics</string>
+    <string name="analyzing_plant_tissue">Analyzing plant tissue health…</string>
+    <string name="running_cellular_diagnostics">Running cellular diagnostics via AI</string>
+    <string name="diagnostic_failed">Diagnostic Failed</string>
+    <string name="analyzed_leaf_cd">Analyzed leaf</string>
+    <string name="plant_is_healthy">Plant is Healthy!</string>
+    <string name="issues_detected">Issues Detected</string>
+    <string name="no_disease_detected">No visible plant disease detected in this scan.</string>
+    <string name="pathology_report_compiled">A plant pathology report has been compiled.</string>
+    <string name="leaf_pathology">Leaf Pathology</string>
+    <string name="probable_cause">Probable Cause</string>
+    <string name="recommended_treatment">Recommended Treatment</string>
+    <string name="prevention_measures">Prevention Measures</string>
+    <string name="care_suggestions">Care Suggestions</string>
+    <string name="healthy_care_suggestions">Your plant looks healthy and is showing good cell vigor. Keep checking on it regularly, make sure it gets adequate sunlight according to its species needs, and do not overwater. Regular monitoring ensures you catch issues early!</string>
+
+    <!-- History Screen -->
+    <string name="scan_history_title">Scan History</string>
+    <string name="search_placeholder">Search by plant or disease name…</string>
+    <string name="no_scans_found">No Scans Found</string>
+    <string name="no_scans_description">Captured scans and diagnosis reports will appear here chronologically.</string>
+    <string name="identify_tag">Identify</string>
+    <string name="pathology_tag">Pathology</string>
+    <string name="unknown_plant">Unknown Plant</string>
+    <string name="healthy">Healthy</string>
+    <string name="delete_from_history_cd">Delete from history</string>
+    <string name="delete_history_title">Delete Scan Item</string>
+    <string name="delete_history_confirmation">Are you sure you want to permanently delete this scan item? This action cannot be undone.</string>
+    <string name="delete_label">Delete</string>
+    <string name="scan_archive_title">Scan Archive</string>
+    <string name="diagnosis_archive_title">Diagnosis Archive</string>
+    <string name="close_cd">Close</string>
+    <string name="cause">Cause</string>
+    <string name="healthy_plant_default">Healthy plant</string>
+    <string name="treatment_recommendations">Treatment Recommendations</string>
+    <string name="prevention_strategy">Prevention Strategy</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_settings_title">Settings</string>
+    <string name="profile_name">Botanist Explorer</string>
+    <string name="profile_vigor_level">Vigor Level: Intermediate</string>
+    <string name="gemini_api_config_title">Gemini API Configuration</string>
+    <string name="gemini_api_config_description">PlantSense AI connects directly to Google Gemini\'s AI model. Provide your API Key securely below.</string>
+    <string name="gemini_api_key_label">Gemini API Key</string>
+    <string name="save_configuration_key">Save Configuration Key</string>
+    <string name="about_plantsense_ai">About PlantSense AI</string>
+    <string name="clear_diagnostics_history">Clear Diagnostics History</string>
+    <string name="clear_history_confirmation">Are you sure you want to permanently delete all local scan items and path reports? This action cannot be undone.</string>
+    <string name="clear_all">Clear All</string>
+    <string name="version_label">Version: %1$s</string>
+    <string name="about_description">Developed using clean architecture principles, keeping data operations separate from domain entities and views. Features Room Database storage, Retrofit API calls to Google Gemini, Hilt Dependency Injection, and Jetpack Compose.</string>
+
+    <!-- Navigation Tabs -->
+    <string name="home_cd">Home</string>
+    <string name="home_label">Home</string>
+    <string name="history_label">History</string>
+    <string name="profile_label">Settings</string>
+
+    <!-- Home Screen -->
+    <string name="good_morning">Good morning</string>
+    <string name="scan_a_plant">Scan a plant</string>
+    <string name="capture_label">Capture</string>
+    <string name="upload_label">Upload</string>
+    <string name="recent_scans_label">Recent scans</string>
+    <string name="select_analysis_type">Select Analysis Type</string>
+    <string name="choose_how_to_analyze">Choose how you want to analyze this image.</string>
+</resources>

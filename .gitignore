@@ -1,0 +1,31 @@
+# Secrets
+gradle.properties
+gradle.properties.example
+local.properties
+
+# Gradle
+.gradle/
+build/
+*/build/
+
+# Android Studio
+.idea/
+*.iml
+
+# Generated files
+.externalNativeBuild/
+.cxx/
+.kotlin/
+
+# APK/AAB
+*.apk
+*.aab
+
+# Signing keys
+*.jks
+*.keystore
+signing.properties
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -10,6 +10,29 @@ PlantSense AI is a state-of-the-art Android application that leverages **Google'
 
 ---
 
+## 📸 Screenshots
+
+<table width="100%">
+  <thead>
+    <tr>
+      <th align="center" width="25%">Home Dashboard</th>
+      <th align="center" width="25%">Pixel Viewfinder</th>
+      <th align="center" width="25%">Diagnostics Report</th>
+      <th align="center" width="25%">Profile Passport</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center"><img src="screenshots/Screenshot_20260725_111126.png" width="100%" /></td>
+      <td align="center"><img src="screenshots/Screenshot_20260725_111135.png" width="100%" /></td>
+      <td align="center"><img src="screenshots/Screenshot_20260725_111148.png" width="100%" /></td>
+      <td align="center"><img src="screenshots/Screenshot_20260725_111207.png" width="100%" /></td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
 ## 🛠️ Architecture & Design Patterns
 
 The codebase is strictly structured according to **Clean Architecture** principles and **MVVM** design patterns. This separation of concerns ensures that business logic remains entirely decoupled from database schemas and visual frameworks, facilitating high testability and maintainability.
@@ -120,10 +143,11 @@ The project maintains comprehensive test coverage across core architectural laye
 3. A Gemini API Developer Key (Obtain a key from [Google AI Studio](https://aistudio.google.com/)).
 
 ### Project Compilation
-Create a `local.properties` file in the project root (or create a developer key property) and configure your Gemini developer credentials:
+Configure your Gemini Developer Key by adding it to your `gradle.properties` file in the project root:
 ```properties
-G_API_KEY="your_gemini_api_key_here"
+G_API_KEY=your_gemini_api_key_here
 ```
+*(Note: Do not wrap the value in quotes inside gradle.properties; the build script handles quote formatting automatically during code generation).*
 
 Compile the debug application using Gradle:
 ```bash

@@ -23,7 +23,7 @@ PlantSense AI is a state-of-the-art Android application that leverages **Google'
   </thead>
   <tbody>
     <tr>
-      <td align="center"><img src="screenshots/Screenshot_20260725_111126.png" width="100%" /></td>
+      <td align="center"><img src="screenshots/Screenshot_20260725_111034.png" width="100%" /></td>
       <td align="center"><img src="screenshots/Screenshot_20260725_111135.png" width="100%" /></td>
       <td align="center"><img src="screenshots/Screenshot_20260725_111148.png" width="100%" /></td>
       <td align="center"><img src="screenshots/Screenshot_20260725_111207.png" width="100%" /></td>

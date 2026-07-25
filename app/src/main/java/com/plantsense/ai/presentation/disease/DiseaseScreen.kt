@@ -1,16 +1,20 @@
 package com.plantsense.ai.presentation.disease
 
 import android.graphics.BitmapFactory
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Spa
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,20 +24,18 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import com.plantsense.ai.R
 import com.plantsense.ai.domain.model.DiseaseDetectionResult
+import com.plantsense.ai.presentation.common.PremiumLoadingScreen
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiseaseScreen(
     imagePath: String,
@@ -49,19 +51,6 @@ fun DiseaseScreen(
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.disease_diagnostics_title), fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back_cd))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        },
         containerColor = MaterialTheme.colorScheme.background,
         modifier = modifier.fillMaxSize()
     ) { paddingValues ->
@@ -72,30 +61,7 @@ fun DiseaseScreen(
         ) {
             when (val state = uiState) {
                 is DiseaseUiState.Loading -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colorScheme.tertiary,
-                            strokeWidth = 4.dp,
-                            modifier = Modifier.size(64.dp)
-                        )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text(
-                            stringResource(R.string.analyzing_plant_tissue),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.tertiary
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            stringResource(R.string.running_cellular_diagnostics),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                        )
-                    }
+                    PremiumLoadingScreen()
                 }
                 is DiseaseUiState.Success -> {
                     DiseaseContent(
@@ -126,23 +92,29 @@ fun DiseaseScreen(
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
                         )
                         Spacer(modifier = Modifier.height(24.dp))
-                        if (historyId != -1) {
-                            Button(
+                        
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            OutlinedButton(
                                 onClick = onBack,
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary
-                                )
+                                shape = RoundedCornerShape(16.dp),
+                                modifier = Modifier.height(48.dp)
                             ) {
-                                Text(stringResource(R.string.back))
+                                Text(stringResource(R.string.back), fontWeight = FontWeight.Bold)
                             }
-                        } else {
-                            Button(
-                                onClick = { viewModel.diagnose(imagePath) },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.tertiary
-                                )
-                            ) {
-                                Text(stringResource(R.string.retry_diagnostic))
+                            
+                            if (historyId == -1) {
+                                Button(
+                                    onClick = { viewModel.diagnose(imagePath) },
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.secondary
+                                    ),
+                                    modifier = Modifier.height(48.dp)
+                                ) {
+                                    Text(stringResource(R.string.retry_diagnostic), fontWeight = FontWeight.Bold)
+                                }
                             }
                         }
                     }
@@ -172,29 +144,49 @@ fun DiseaseContent(
             .fillMaxSize()
             .verticalScroll(scrollState)
     ) {
-        // Captured Image (no card border, spans full width)
-        bitmap?.let {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-            ) {
+        // Curved Full-bleed image header
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(320.dp)
+        ) {
+            bitmap?.let {
                 Image(
                     bitmap = it.asImageBitmap(),
                     contentDescription = stringResource(R.string.analyzed_leaf_cd),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
-                // Gradient overlay at bottom of image
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.4f)),
-                                startY = 400f
-                            )
+            }
+            
+            // Vignette overlay
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.5f)),
+                            startY = 200f
                         )
+                    )
+            )
+
+            // Floating Circular Back Button
+            Box(
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .padding(start = 16.dp, top = 16.dp)
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.4f))
+                    .clickable { onBack() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = stringResource(R.string.back_cd),
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
@@ -205,28 +197,36 @@ fun DiseaseContent(
                 .fillMaxWidth()
         ) {
             if (result.isHealthy) {
-                // Healthy status badge
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = null,
-                        tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = stringResource(R.string.plant_is_healthy),
-                        color = Color(0xFF4CAF50),
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                // Healthy Banner badge
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFE8F5E9))
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Rounded.CheckCircle,
+                            contentDescription = null,
+                            tint = Color(0xFF2E7D32),
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "HEALTHY",
+                            color = Color(0xFF2E7D32),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
                     text = stringResource(R.string.plant_is_healthy),
-                    fontSize = 30.sp,
+                    fontSize = 32.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -239,21 +239,41 @@ fun DiseaseContent(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Healthy Suggestions Card
+                // Healthy suggestions custom Card
                 Card(
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.08f)),
                     modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Column(modifier = Modifier.padding(20.dp)) {
-                        Text(
-                            text = stringResource(R.string.care_suggestions),
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
+                    Column(modifier = Modifier.padding(24.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Spa,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = stringResource(R.string.care_suggestions),
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
                         Text(
                             text = stringResource(R.string.healthy_care_suggestions),
                             style = MaterialTheme.typography.bodyMedium,
@@ -263,35 +283,43 @@ fun DiseaseContent(
                     }
                 }
             } else {
-                // Issues Detected / Warning badge
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Warning,
-                        contentDescription = null,
-                        tint = Color(0xFFE57373), // Red/coral color
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = stringResource(
-                            R.string.severity_label,
-                            result.severity ?: "Detected"
-                        ),
-                        color = Color(0xFFE57373),
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                // Pathology detected warning badge
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.errorContainer)
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Rounded.Warning,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = stringResource(
+                                R.string.severity_label,
+                                result.severity ?: "Detected"
+                            ).uppercase(),
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-                // Disease Name
+                // Disease Header
                 Text(
                     text = result.diseaseName ?: stringResource(R.string.leaf_pathology),
-                    fontSize = 30.sp,
+                    fontSize = 32.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onBackground,
-                    lineHeight = 36.sp
+                    lineHeight = 38.sp
                 )
                 Text(
                     text = stringResource(R.string.pathology_report_compiled),
@@ -302,36 +330,52 @@ fun DiseaseContent(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Details boxes (darker/clean cards)
+                // Detailed report sections (structured)
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     // Cause
                     result.cause?.let {
-                        DetailReportCard(title = stringResource(R.string.probable_cause), content = it)
+                        DetailReportCard(
+                            title = stringResource(R.string.probable_cause), 
+                            content = it,
+                            tagColor = MaterialTheme.colorScheme.secondary
+                        )
                     }
 
                     // Symptoms
                     result.symptoms?.let {
-                        DetailReportCard(title = stringResource(R.string.observed_symptoms), content = it)
+                        DetailReportCard(
+                            title = stringResource(R.string.observed_symptoms), 
+                            content = it,
+                            tagColor = MaterialTheme.colorScheme.tertiary
+                        )
                     }
 
                     // Treatment
                     result.treatment?.let {
-                        DetailReportCard(title = stringResource(R.string.recommended_treatment), content = it)
+                        DetailReportCard(
+                            title = stringResource(R.string.recommended_treatment), 
+                            content = it,
+                            tagColor = MaterialTheme.colorScheme.primary
+                        )
                     }
 
                     // Prevention
                     result.prevention?.let {
-                        DetailReportCard(title = stringResource(R.string.prevention_measures), content = it)
+                        DetailReportCard(
+                            title = stringResource(R.string.prevention_measures), 
+                            content = it,
+                            tagColor = MaterialTheme.colorScheme.outline
+                        )
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Return Button
+            // Action return to camera Button
             Button(
                 onClick = onBack,
                 modifier = Modifier
@@ -339,13 +383,14 @@ fun DiseaseContent(
                     .height(52.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (result.isHealthy) MaterialTheme.colorScheme.primary else Color(0xFFE57373)
+                    containerColor = if (result.isHealthy) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                 )
             ) {
                 Text(
                     text = stringResource(R.string.back_to_camera),
                     fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp
+                    fontSize = 15.sp,
+                    color = Color.White
                 )
             }
 
@@ -355,28 +400,39 @@ fun DiseaseContent(
 }
 
 @Composable
-fun DetailReportCard(title: String, content: String) {
+fun DetailReportCard(title: String, content: String, tagColor: Color) {
     Card(
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.08f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text(
-                text = title,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-            )
-            Spacer(modifier = Modifier.height(6.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(tagColor)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = title.uppercase(),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    letterSpacing = 1.sp
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = content,
                 style = MaterialTheme.typography.bodyMedium,
                 lineHeight = 22.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f)
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
             )
         }
     }

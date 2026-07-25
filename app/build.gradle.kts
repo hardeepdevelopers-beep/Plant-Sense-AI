@@ -54,6 +54,10 @@ android {
     }
 }
 
+kapt {
+    correctErrorTypes = true
+}
+
 
 dependencies {
   val composeBom = platform(libs.androidx.compose.bom)
@@ -96,12 +100,12 @@ dependencies {
 
   // Hilt
   implementation(libs.hilt.android)
-  "kapt"(libs.hilt.compiler)
+  kapt(libs.hilt.compiler)
   implementation(libs.hilt.navigation.compose)
 
   // Room
   implementation(libs.room.runtime)
-  "kapt"(libs.room.compiler)
+  kapt(libs.room.compiler)
   implementation(libs.room.ktx)
 
   // Retrofit & OkHttp

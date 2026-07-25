@@ -3,6 +3,7 @@ package com.plantsense.ai.worker
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import timber.log.Timber
 import java.io.File
 
 class CleanUpWorker(
@@ -12,7 +13,7 @@ class CleanUpWorker(
 
     override suspend fun doWork(): Result {
         return try {
-            timber.log.Timber.d("CleanUpWorker starting cache cleanup.")
+            Timber.d("CleanUpWorker starting cache cleanup.")
             // This worker ONLY cleans context.cacheDir (transient/temp files).
             // It must NEVER be pointed at context.filesDir/scans, which holds
             // permanently saved scan images referenced by Room. Deleting those
@@ -29,10 +30,10 @@ class CleanUpWorker(
                     }
                 }
             }
-            timber.log.Timber.d("CleanUpWorker finished. Deleted $deletedCount cache files.")
+            Timber.d("CleanUpWorker finished. Deleted $deletedCount cache files.")
             Result.success()
         } catch (e: Exception) {
-            timber.log.Timber.e(e, "CleanUpWorker failed cache cleanup.")
+            Timber.e(e, "CleanUpWorker failed cache cleanup.")
             Result.failure()
         }
     }

@@ -3,6 +3,7 @@ package com.plantsense.ai.presentation.navigation
 import kotlinx.serialization.Serializable
 
 sealed interface AppRoute {
+    @Serializable data object Splash : AppRoute
     @Serializable data object Home : AppRoute
     @Serializable data object Camera : AppRoute
     @Serializable data class Identify(val path: String, val historyId: Int = -1) : AppRoute

@@ -10,35 +10,74 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = PlantSage,
-    secondary = PlantGreenLight,
-    tertiary = AccentOrange,
-    background = PlantBackgroundDark,
-    surface = CardDark,
-    onPrimary = PlantBackgroundDark,
-    onSecondary = TextDark,
-    onTertiary = TextDark,
-    onBackground = TextDark,
-    onSurface = TextDark
+private val LightColorScheme = lightColorScheme(
+    primary = PSLightPrimary,
+    onPrimary = PSLightOnPrimary,
+    primaryContainer = PSLightPrimaryContainer,
+    onPrimaryContainer = PSLightOnPrimaryContainer,
+    secondary = PSLightSecondary,
+    onSecondary = PSLightOnSecondary,
+    secondaryContainer = PSLightSecondaryContainer,
+    onSecondaryContainer = PSLightOnSecondaryContainer,
+    tertiary = PSLightTertiary,
+    onTertiary = PSLightOnTertiary,
+    tertiaryContainer = PSLightTertiaryContainer,
+    onTertiaryContainer = PSLightOnTertiaryContainer,
+    error = PSLightError,
+    onError = PSLightOnError,
+    errorContainer = PSLightErrorContainer,
+    onErrorContainer = PSLightOnErrorContainer,
+    background = PSLightBackground,
+    onBackground = PSLightOnBackground,
+    surface = PSLightSurface,
+    onSurface = PSLightOnSurface,
+    surfaceVariant = PSLightSurfaceVariant,
+    onSurfaceVariant = PSLightOnSurfaceVariant,
+    outline = PSLightOutline,
+    outlineVariant = PSLightOutline,
+    scrim = Color.Black,
+    inversePrimary = PSDarkPrimary,
+    inverseSurface = PSDarkSurface,
+    inverseOnSurface = PSDarkOnSurface,
+    surfaceTint = PSLightPrimary
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = PlantGreenLight,
-    secondary = PlantSage,
-    tertiary = AccentOrange,
-    background = PlantBackgroundLight,
-    surface = CardLight,
-    onPrimary = CardLight,
-    onSecondary = TextLight,
-    onTertiary = CardLight,
-    onBackground = TextLight,
-    onSurface = TextLight
+private val DarkColorScheme = darkColorScheme(
+    primary = PSDarkPrimary,
+    onPrimary = PSDarkOnPrimary,
+    primaryContainer = PSDarkPrimaryContainer,
+    onPrimaryContainer = PSDarkOnPrimaryContainer,
+    secondary = PSDarkSecondary,
+    onSecondary = PSDarkOnSecondary,
+    secondaryContainer = PSDarkSecondaryContainer,
+    onSecondaryContainer = PSDarkOnSecondaryContainer,
+    tertiary = PSDarkTertiary,
+    onTertiary = PSDarkOnTertiary,
+    tertiaryContainer = PSDarkTertiaryContainer,
+    onTertiaryContainer = PSDarkOnTertiaryContainer,
+    error = PSDarkError,
+    onError = PSDarkOnError,
+    errorContainer = PSDarkErrorContainer,
+    onErrorContainer = PSDarkOnErrorContainer,
+    background = PSDarkBackground,
+    onBackground = PSDarkOnBackground,
+    surface = PSDarkSurface,
+    onSurface = PSDarkOnSurface,
+    surfaceVariant = PSDarkSurfaceVariant,
+    onSurfaceVariant = PSDarkOnSurfaceVariant,
+    outline = PSDarkOutline,
+    outlineVariant = PSDarkOutline,
+    scrim = Color.Black,
+    inversePrimary = PSLightPrimary,
+    inverseSurface = PSLightSurface,
+    inverseOnSurface = PSLightOnSurface,
+    surfaceTint = PSDarkPrimary
 )
 
 @Composable
@@ -59,8 +98,11 @@ fun PlantSenseAITheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+            window.statusBarColor = Color.Transparent.toArgb()
+            window.navigationBarColor = Color.Transparent.toArgb()
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            insetsController.isAppearanceLightStatusBars = !darkTheme
+            insetsController.isAppearanceLightNavigationBars = !darkTheme
         }
     }
 

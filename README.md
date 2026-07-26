@@ -1,4 +1,4 @@
-# 🌿 PlantSense AI - Premium Plant Identification & Leaf Diagnostics
+# PlantSense AI - Premium Plant Identification & Leaf Diagnostics
 
 [![Platform](https://img.shields.io/badge/Platform-Android-3DDC84.svg?style=flat-square&logo=android)](https://developer.android.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.0-7F52FF.svg?style=flat-square&logo=kotlin)](https://kotlinlang.org)
